@@ -16,9 +16,9 @@ const ibmPlex = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ARCHITECT_OS | Muhammad Umair",
+  title: "Umair Portfolio",
   description:
-    "Software Engineer and DevOps Engineer building scalable full-stack products, cloud infrastructure, and automated delivery systems.",
+    "Muhammad Umair — Software Engineer and DevOps Engineer. Portfolio of full-stack products, cloud infrastructure, and automated delivery systems.",
 };
 
 export default function RootLayout({

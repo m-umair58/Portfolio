@@ -8,6 +8,7 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
+  type MouseEvent,
   type ReactNode,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -357,7 +358,7 @@ const HELP_TEXT = `ARCHITECT_OS TERMINAL — AVAILABLE COMMANDS
   date         Print system timestamp
   echo <text>  Echo arguments to stdout
   curl -OJ /api/resume   Download resume PDF with progress
-  clear        Purge terminal buffer
+  clear        Clear the terminal screen
   gui          Switch to GUI mode
   exit         End CLI session and return to GUI
 
@@ -480,7 +481,7 @@ export function CliPortfolio() {
   );
 
   const clearTerminal = useCallback(() => {
-    setLines([makeLine("out", "Buffer purged.")]);
+    setLines([]);
     setInput("");
     historyIndexRef.current = -1;
     draftRef.current = "";
@@ -753,7 +754,7 @@ export function CliPortfolio() {
           break;
 
         case "clear":
-          setLines([makeLine("out", "Buffer purged.")]);
+          setLines([]);
           setInput("");
           return;
 
@@ -922,8 +923,28 @@ export function CliPortfolio() {
     scrollToBottom();
   }, [lines, scrollToBottom]);
 
+  const focusInput = useCallback(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  /** Keep focus in the prompt when clicking the terminal surface (real TTY behavior). */
+  const handleTerminalMouseDown = useCallback(
+    (e: MouseEvent<HTMLDivElement>) => {
+      const target = e.target as HTMLElement;
+      if (target.closest("button, a, input, textarea, [role='button']")) {
+        return;
+      }
+      e.preventDefault();
+      focusInput();
+    },
+    [focusInput],
+  );
+
   return (
-    <div className="blueprint-bg relative flex h-screen flex-col bg-[#080809] font-mono">
+    <div
+      className="blueprint-bg relative flex h-screen flex-col bg-[#080809] font-mono"
+      onMouseDown={handleTerminalMouseDown}
+    >
       <div className="scanline" />
 
       {/* Terminal header */}
@@ -947,7 +968,10 @@ export function CliPortfolio() {
       </header>
 
       {/* Terminal body */}
-      <div className="relative z-10 flex flex-1 flex-col overflow-hidden">
+      <div
+        className="relative z-10 flex flex-1 cursor-text flex-col overflow-hidden"
+        onClick={focusInput}
+      >
         <div className="font-code-md flex-1 space-y-1 overflow-y-auto p-4 text-primary">
           {lines.map((line) => (
             <div
@@ -991,7 +1015,6 @@ export function CliPortfolio() {
               className="w-full bg-transparent p-0 text-primary outline-none caret-primary-container"
               aria-label="Terminal input"
             />
-            <span className="cursor-blink inline-block h-4 w-2 bg-primary-container" />
           </div>
 
           <div ref={endRef} />
